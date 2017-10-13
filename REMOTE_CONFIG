@@ -2,3 +2,8 @@ git remote add -f -t master --no-tags scraml-test-java git@github.com:atomicbits
 git read-tree --prefix=src/ -u scraml-test-java/master:src/
 git commit
 
+// update:
+
+git rm -rf src/
+git read-tree --prefix=src/ -u scraml-test-java/master:src/
+git commit
