@@ -15,4 +15,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'scraml-test-java'
+rootProject.name = 'scraml-test-java-gradle'
