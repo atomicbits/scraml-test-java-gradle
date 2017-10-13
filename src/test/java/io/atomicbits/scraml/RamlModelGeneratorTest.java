@@ -9,12 +9,14 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import io.atomicbits.raml10.*;
 import io.atomicbits.raml10.rest.user.UserResource;
+import io.atomicbits.raml10.rest.user.formurlencodedtype.FormurlencodedtypeResource;
+import io.atomicbits.raml10.rest.user.inlinetype.InlinetypeResource;
 import io.atomicbits.raml10.rest.user.userid.UseridResource;
-import io.atomicbits.scraml.jdsl.BinaryData;
-import io.atomicbits.scraml.jdsl.BodyPart;
-import io.atomicbits.scraml.jdsl.Response;
-import io.atomicbits.scraml.jdsl.StringPart;
-import io.atomicbits.scraml.jdsl.client.*;
+import io.atomicbits.raml10.dsl.javajackson.BinaryData;
+import io.atomicbits.raml10.dsl.javajackson.BodyPart;
+import io.atomicbits.raml10.dsl.javajackson.Response;
+import io.atomicbits.raml10.dsl.javajackson.StringPart;
+import io.atomicbits.raml10.dsl.javajackson.client.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,7 +39,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
  */
 public class RamlModelGeneratorTest {
 
-    private static int port = 8281;
+    private static int port = 8282;
     private static String host = "localhost";
     private static WireMockServer wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().port(port));
     private static RamlTestClient client;
@@ -157,6 +159,58 @@ public class RamlModelGeneratorTest {
 
     }
 
+
+    @Test
+    public void postWithTypedFormUrlEncodedTest() {
+
+        FormurlencodedtypeResource formurlencodedtypeResource = client.rest.user.formurlencodedtype;
+
+        stubFor(
+                post(urlEqualTo("/rest/user/formurlencodedtype"))
+                        .withHeader("Content-Type", equalTo("application/x-www-form-urlencoded; charset=UTF-8"))
+                        .withHeader("Accept", equalTo("application/json")) // The default media type applies here!
+                        .withRequestBody(equalTo("firstname=Foo&age=21&lastname=Bar"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                        )
+        );
+
+        SimpleForm simpleForm = new SimpleForm();
+        simpleForm.setAge(21L);
+        simpleForm.setFirstname("Foo");
+        simpleForm.setLastname("Bar");
+        CompletableFuture<Response<String>> eventualPostResponse = formurlencodedtypeResource.post(simpleForm);
+        try {
+            Response<String> response = eventualPostResponse.get(10, TimeUnit.SECONDS);
+            assertEquals(200, response.getStatus());
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            fail("Did not expect exception: " + e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void getWithTypedQueryStringTest() {
+
+        stubFor(
+                get(urlEqualTo("/rest/user/typedquerystring?firstname=Foo&lastname=Bar"))
+                        .willReturn(aResponse()
+                                .withStatus(200)));
+
+        SimpleForm simpleForm = new SimpleForm();
+        // simpleForm.setAge(21L);
+        simpleForm.setFirstname("Foo");
+        simpleForm.setLastname("Bar");
+        CompletableFuture<Response<String>> eventualPostResponse = client.rest.user.typedquerystring.get(simpleForm);
+        try {
+            Response<String> response = eventualPostResponse.get(10, TimeUnit.SECONDS);
+            assertEquals(200, response.getStatus());
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            fail("Did not expect exception: " + e.getMessage());
+        }
+
+    }
 
     @Test
     public void putRequestTest() {
@@ -418,11 +472,11 @@ public class RamlModelGeneratorTest {
 
 
     @Test
-    public void binaryFileUploadTest() throws URISyntaxException, MalformedURLException {
+    public void binaryFileUploadTest() throws URISyntaxException, MalformedURLException, UnsupportedEncodingException {
 
         stubFor(
                 post(urlEqualTo("/rest/animals/datafile/upload"))
-                        .withRequestBody(equalTo(new String(binaryData())))
+                        .withRequestBody(equalTo(new String(binaryData(), "UTF-8")))
                         .willReturn(
                                 aResponse()
                                         .withBody("{\"received\":\"OK\"}")
@@ -447,7 +501,7 @@ public class RamlModelGeneratorTest {
 
         stubFor(
                 post(urlEqualTo("/rest/animals/datafile/upload"))
-                        .withRequestBody(equalTo(new String(binaryData())))
+                        .withRequestBody(equalTo(new String(binaryData(), "UTF-8")))
                         .willReturn(
                                 aResponse()
                                         .withBody("{\"received\":\"OK\"}")
@@ -472,7 +526,7 @@ public class RamlModelGeneratorTest {
 
         stubFor(
                 post(urlEqualTo("/rest/animals/datafile/upload"))
-                        .withRequestBody(equalTo(new String(binaryData())))
+                        .withRequestBody(equalTo(new String(binaryData(), "UTF-8")))
                         .willReturn(
                                 aResponse()
                                         .withBody("{\"received\":\"OK\"}")
@@ -749,7 +803,7 @@ public class RamlModelGeneratorTest {
         }
     }
 
-/**
+    /**
      * serialization of a given object that contains a field that points to an empty object
      */
     @Test
@@ -775,6 +829,56 @@ public class RamlModelGeneratorTest {
 
         try {
             Response<String> response = eventualResponse.get(10, TimeUnit.SECONDS);
+            assertEquals(200, response.getStatus());
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            fail("Did not expect exception: " + e.getMessage());
+        }
+    }
+
+    /**
+     * A plain string post body should serialize without extra quotes.
+     */
+    @Test
+    public void plainStringPostBody() {
+        stubFor(
+                post(urlEqualTo("/rest/animals/food"))
+                        .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                        .withRequestBody(
+                                equalTo("veggie")
+                        )
+                        .willReturn(
+                                aResponse()
+                                        .withBody("[{\"_type\":\"Cat\",\"gender\":\"female\",\"name\":\"Orelia\"}]")
+                                        .withStatus(200)
+                        )
+        );
+
+        CompletableFuture<Response<List<Animal>>> eventualResponse = client.rest.animals.food.post("veggie");
+
+        try {
+            Response<List<Animal>> response = eventualResponse.get(10, TimeUnit.SECONDS);
+            assertEquals(200, response.getStatus());
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            fail("Did not expect exception: " + e.getMessage());
+        }
+    }
+
+    /**
+     * An enumeration as query parameter type should serialize as its string value
+     */
+    @Test
+    public void enumerationQueryParameterType() {
+
+        stubFor(get(urlEqualTo("/rest/animals/byfood?food=rats"))
+                .withHeader("Accept", equalTo("application/json"))
+                .willReturn(aResponse()
+                        .withBody("[{\"_type\":\"Dog\",\"canBark\":true,\"gender\":\"female\",\"name\":\"Ziva\"}]")
+                        .withStatus(200)));
+
+        CompletableFuture<Response<List<Animal>>> eventualResponse = client.rest.animals.byfood.get(Food.rats);
+
+        try {
+            Response<List<Animal>> response = eventualResponse.get(10, TimeUnit.SECONDS);
             assertEquals(200, response.getStatus());
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             fail("Did not expect exception: " + e.getMessage());

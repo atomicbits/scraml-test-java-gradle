@@ -1,9 +1,9 @@
-git remote add -f -t master --no-tags scraml-test-java git@github.com:atomicbits/scraml-test-java.git
-git read-tree --prefix=src/ -u scraml-test-java/master:src/
+git remote add -f -t develop --no-tags scraml-test-java git@github.com:atomicbits/scraml-test-java.git
+git read-tree --prefix=src/ -u scraml-test-java/develop:src/
 git commit
 
 // update:
 
 git rm -rf src/
-git read-tree --prefix=src/ -u scraml-test-java/master:src/
+git read-tree --prefix=src/ -u scraml-test-java/develop:src/
 git commit
