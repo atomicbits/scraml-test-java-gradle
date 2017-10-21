@@ -25,6 +25,7 @@ buildscript {
     }
 }
 
+
 scraml {
     ramlApi '/io/atomicbits/raml10/RamlTestClient.raml'
     licenseKey 'We, Atomic BITS, use the free scraml license in this project without any intend to serve commercial purposes for ourselves or anyone else.'
