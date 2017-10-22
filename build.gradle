@@ -31,23 +31,12 @@ scraml {
     licenseKey 'We, Atomic BITS, use the free scraml license in this project without any intend to serve commercial purposes for ourselves or anyone else.'
     classHeader 'All rights reserved.\n' +
             'This is a custom class header.'
-    //    apiPackage;
-    //    resourceDirectory;
-//        outputDirectory
+    // apiPackage;
+    // platform;
+    // resourceDirectory;
+    // outputDirectory
 }
 
-//compileJava{
-//    source    += project.extensions.scraml.outputDirectory
-//}
-
-//sourceSets {
-//    generated {
-//        java.srcDirs generateSources.outputDir
-//    }
-//
-//    // set up a dependency for the main sourceSet on the generated sourceSet
-//    main.compileClasspath += generated.output
-//}
 
 // In this section you declare where to find the dependencies of your project
 repositories {
