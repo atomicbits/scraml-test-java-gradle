@@ -1,15 +1,7 @@
-// Enable the plugins section below to enable the remote plugin repository (should be disabled when we use the local maven repo, see below)
-//plugins {
-//    id 'io.atomicbits.scraml' version '0.6.0'
-//}
-
-// Apply the java plugin to add support for Java
-apply plugin: 'java'
-
-apply plugin: 'io.atomicbits.scraml'
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+// Clean
+// ./gradlew clean
+// Build
+// ./gradlew build
 
 
 // enable the buildscript below to use the local maven repository for the gradle plugin (and diable the 'plugins' section above):
@@ -17,13 +9,29 @@ buildscript {
     repositories {
 
         mavenLocal()
+        mavenCentral()
         jcenter()
 
         dependencies {
-            classpath 'io.atomicbits:scraml-gradle-plugin:0.6.1-SNAPSHOT'
+             classpath 'io.atomicbits:scraml-gradle-plugin:0.7.0-M1'
         }
+
     }
 }
+
+
+// Enable the plugins section below to enable the remote plugin repository (should be disabled when we use the local maven repo, see below)
+// Published plugin artifact doesn't seem to work property, maybe a plugin dependency issue? ToDo: check.
+//plugins {
+//    id 'io.atomicbits.scraml' version '0.7.0-M1'
+//}
+
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+apply plugin: 'io.atomicbits.scraml'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 
 scraml {
@@ -31,9 +39,9 @@ scraml {
     licenseKey 'We, Atomic BITS, use the free scraml license in this project without any intend to serve commercial purposes for ourselves or anyone else.'
     classHeader 'All rights reserved.\n' +
             'This is a custom class header.'
-    // apiPackage;
-    // platform;
-    // resourceDirectory;
+    // platform 'JavaJackson' or 'ScalaPlay' // on roadmap: 'AndroidJavaJackson', 'OsxSwift' and 'Python'
+    // apiPackage
+    // resourceDirectory
     // outputDirectory
 }
 
